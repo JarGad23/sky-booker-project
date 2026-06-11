@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// PROGRAMOWANIE OBIEKTOWE - Modele dziedziczą
+// wspólne pola (id, timestamps) koncepcyjnie
+// ============================================
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Flight {
+  id             String    @id @default(uuid())
+  flightNumber   String    @unique
+  origin         String
+  destination    String
+  departureTime  DateTime
+  arrivalTime    DateTime
+  price          Decimal   @db.Decimal(10, 2)
+  totalSeats     Int
+  availableSeats Int
+  airline        String
+  bookings       Booking[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Booking {
+  id         String        @id @default(uuid())
+  user       User          @relation(fields: [userId], references: [id])
+  userId     String
+  flight     Flight        @relation(fields: [flightId], references: [id])
+  flightId   String
+  seatNumber String
+  status     BookingStatus @default(CONFIRMED)
+  passenger  Passenger?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model Passenger {
+  id        String  @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  bookingId String  @unique
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
